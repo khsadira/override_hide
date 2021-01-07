@@ -1,0 +1,17 @@
+En utilisant gdb on remarque qu'il y a 3 fonctions:
+main
+test
+decrypt
+
+On a besosin de transformer le buffer: Q}|u`sfg~sf{}|a3
+en: Congratulations!
+
+On a donc besoin de trouver la valeur de la clef qui  transformera le buffer en "Congratulations!"
+
+
+On remarque que dans la fonction decrypt n'est appelé que si: 322424845 - password <= 21
+
+On doit donc rentrer un nombre compris entre 322424845 et 322424845-21
+On test toutes les combinaisons.
+
+On trouve comme password: 322424827

