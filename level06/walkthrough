@@ -1,0 +1,28 @@
+gdb level06
+
+On voit que le programme demande un login et un serial.
+On remarque que le login est alors hashé pour donner un serial, comparé ensuite à notre serial.
+Si ils sont égaux, alors ça lancera un shell
+
+On va donc essayer de lire la clé une fois hashé dans gdb.
+
+On voit que la comparaison du serial et de la clef hashé se fait à auth+286 (0x08048866)
+On peut donc set un breakpoint et y lire la variable hashé.
+
+(gdb) b *0x080487ba          <= breakpoint pour skip le ptrace
+Breakpoint 1 at 0x80487ba
+(gdb) b *0x08048866          <= breakpoint pour lire la variable hashé
+Breakpoint 2 at 0x8048866
+(gdb) r                      <= run
+
+Breakpoint 1, 0x080487ba in auth ()
+(gdb) set $eax=1             <= set eax à 1 pour bypass le ptrace.
+(gdb) c                      <= continue
+Continuing.
+
+Breakpoint 2, 0x08048866 in auth ()
+(gdb) x/d -0x10+$ebp         <= affiché le login hashé
+0xffffd698:	6229050
+
+LOGIN: AAAAAA
+SERIAL: 6229050

